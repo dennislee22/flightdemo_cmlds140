@@ -2,13 +2,19 @@ import os
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 from pyspark.sql.functions import *
-
+#add following line for CML legacy engine
+from pyspark_llap.sql.session import HiveWarehouseSession
 
 storage = os.getenv("STORAGE")
+storage = "/tmp"
 
 spark = SparkSession\
   .builder\
   .appName("Airline Data Exploration")\
+  .config("spark.security.credentials.hiveserver2.enabled","false")\
+  .config("spark.datasource.hive.warehouse.read.jdbc.mode", "client")\
+  .config("spark.jars", "/home/cdsw/hive-warehouse-connector-assembly-1.0.0.7.1.7.1000-141.jar")\
+  .config("spark.sql.hive.hiveserver2.jdbc.url","jdbc:hive2://hs2-hiveflight.apps.ecs1.cdpkvm.cldr/flight;transportMode=http;httpPath=cliservice;socketTimeout=60;ssl=true;retries=3;user=ldapuser1;password=ldapuser1")\
   .config("spark.executor.memory","8g")\
   .config("spark.executor.cores","4")\
   .config("spark.driver.memory","20g")\
@@ -16,8 +22,9 @@ spark = SparkSession\
   .config("spark.yarn.access.hadoopFileSystems",storage)\
   .getOrCreate()
 
-flight_df = spark.sql("select * from default.flights_data_all")
 
+hive = HiveWarehouseSession.session(spark).build()
+flight_df = hive.sql("select * from flight.flights_data_all")
 flight_df.persist()
 
 flight_df.printSchema()
