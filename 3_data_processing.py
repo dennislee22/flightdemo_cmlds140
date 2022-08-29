@@ -16,15 +16,16 @@ spark = SparkSession\
   .config("spark.jars", "/home/cdsw/hive-warehouse-connector-assembly-1.0.0.7.1.7.1000-141.jar")\
   .config("spark.sql.hive.hiveserver2.jdbc.url","jdbc:hive2://hs2-hiveflight.apps.ecs1.cdpkvm.cldr/flight;transportMode=http;httpPath=cliservice;socketTimeout=60;ssl=true;retries=3;user=ldapuser1;password=ldapuser1")\
   .config("spark.executor.memory","8g")\
-  .config("spark.executor.cores","4")\
-  .config("spark.driver.memory","20g")\
-  .config("spark.executor.instances","4")\
+  .config("spark.executor.cores","2")\
+  .config("spark.driver.memory","8g")\
+  .config("spark.executor.instances","2")\
+  .config("spark.rpc.message.maxSize", "1024")\
   .config("spark.yarn.access.hadoopFileSystems",storage)\
   .getOrCreate()
 
 
 hive = HiveWarehouseSession.session(spark).build()
-flight_df = hive.sql("select * from flight.flights_data_all")
+flight_df = hive.sql("select * from flight.flights_data_all limit 1234567")
 flight_df.persist()
 
 flight_df.printSchema()
