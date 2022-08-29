@@ -1,12 +1,5 @@
 ## Part 0: Bootstrap File
-# You need to at the start of the project. It will install the requirements, creates the 
-# STORAGE environment variable and copy the data from 
-# raw/WA_Fn-UseC_-Telco-Customer-Churn-.csv into /datalake/data/churn of the STORAGE 
-# location.
-
-# The STORAGE environment variable is the Cloud Storage location used by the DataLake 
-# to store hive data. On AWS it will s3a://[something], on Azure it will be 
-# abfs://[something] and on CDSW cluster, it will be hdfs://[something]
+# Use CML legacy engine
 
 # Install the requirements
 !pip3 install --progress-bar off -r requirements.txt
@@ -28,20 +21,8 @@ PROJECT_NAME = os.getenv("CDSW_PROJECT")
 cml = CMLBootstrap(HOST, USERNAME, API_KEY, PROJECT_NAME)
 
 # Set the STORAGE environment variable
-try : 
-  storage=os.environ["STORAGE"]
-except:
-  if os.path.exists("/etc/hadoop/conf/hive-site.xml"):
-    tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
-    root = tree.getroot()
-    for prop in root.findall('property'):
-      if prop.find('name').text == "hive.metastore.warehouse.dir":
-        storage = prop.find('value').text.split("/")[0] + "//" + prop.find('value').text.split("/")[2]
-  else:
-    storage = "/user/" + os.getenv("HADOOP_USER_NAME")
-  storage_environment_params = {"STORAGE":storage}
-  storage_environment = cml.create_environment_variable(storage_environment_params)
-  os.environ["STORAGE"] = storage
+# hard code the storage path
+STORAGE = "/tmp"
 
 # Upload the data to the cloud storage
 !mkdir data
@@ -56,3 +37,4 @@ except:
 
 !curl https://cdp-demo-data.s3-us-west-2.amazonaws.com/all_flight_data.zip | zcat | hadoop fs -put - $STORAGE/datalake/data/flight_data/set_1/flight_data_1.csv
 !for i in $(seq 2009 2018); do curl https://cdp-demo-data.s3-us-west-2.amazonaws.com/$i.csv | hadoop fs -put - $STORAGE/datalake/data/flight_data/set_2/$i.csv; done
+
