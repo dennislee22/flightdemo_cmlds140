@@ -20,6 +20,8 @@ spark = SparkSession\
     .config("spark.driver.memory","6g")\
     .config("spark.executor.instances","2")\
     .config("spark.yarn.access.hadoopFileSystems",storage)\
+    .config("spark.yarn.appMasterEnv.HADOOP_JAAS_DEBUG","true")\
+    .config("spark.yarn.am.extraJavaOptions","-Dsun.security.krb5.debug=true -Dsun.security.spnego.debug=true")\
     .getOrCreate()
 
 
